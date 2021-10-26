@@ -1,0 +1,153 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{xshowidx}[v0.1 2021/10/16 sanbi-honda]
+
+
+
+\RequirePackage{xkeyval}
+
+
+\def\xshowidx@msg{%
+   \typeout{%
+^^J
+=========================================^^J%
+========= Message from xshowidx =========^^J%
+=========================================^^J%
+xshowidx is skipped. ^^J%
+Declare \string\makeindex\space after includeing xshowidx.^^J%
+=========================================}%
+}
+
+
+\DeclareOptionX{sep}[10mm]{\def\xshowidx@sep{#1}}
+\DeclareOptionX{width}[10zw]{\def\xshowidx@width{#1}}
+\DeclareOptionX{framewidth}[.4pt]{\def\xshowidx@bodyframewidth{#1}}
+\DeclareOptionX{crosslength}[10mm]{\def\xshowidx@crosslength{#1}}
+\DeclareOptionX{font}[\footnotesize]{\def\xshowidx@font{#1}}
+\DeclareOptionX{frametype}[corner]{\def\xshowidx@frametype{#1}}
+
+
+\newif\if@xshowidx
+\DeclareOptionX{showidx}[true]{\csname @xshowidx#1\endcsname}
+
+\newif\if@showframe
+\DeclareOptionX{showframe}[true]{\csname @showframe#1\endcsname}
+\DeclareOptionX{noframe}[false]{\csname @showframe#1\endcsname}
+
+
+\ExecuteOptionsX{sep,width,framewidth,crosslength,showidx,font,frametype,showframe}
+\ProcessOptionsX
+
+
+
+\@ifundefined{@indexfile}{}{%
+\AtEndDocument{\xshowidx@msg}%
+\endinput}
+
+
+
+
+\def\side@frame@corner{\relax}
+\def\side@frame@all{\@depth\textheight}
+\def\topbot@frame@corner{\hfill}
+\def\topbot@frame@all{\hrulefill}
+
+
+%\def\xshowidx@bodyframewidth{.4pt}
+
+\newtoks\tok@showidxA
+\newtoks\tok@showidxB
+
+
+\def\indexentry#1#2{%
+   \@ifundefined{showidx@#2}{\@namedef{showidx@#2}{}}{}
+   \expandafter\expandafter\expandafter\tok@showidxA
+      \expandafter\expandafter\expandafter{%
+          \csname showidx@#2\endcsname}
+   \tok@showidxB{#1}%
+   \expandafter\xdef\csname showidx@#2\endcsname{\the\tok@showidxA\par\the\tok@showidxB}
+}
+
+\def\cornerbodyframe{%
+   \parindent\z@
+   %\leavevmode
+   \leftskip\z@%\rightskip\z@
+   \noindent\rlap{\vbox to\z@{\hsize\textwidth%%\parindent\z@%
+    %%\color{red}%
+         \vbox to\textheight{%
+            \hsize\textwidth\relax
+            \hskip-\xshowidx@crosslength\relax
+            \leaders\hrule\@width\xshowidx@crosslength\@height\xshowidx@bodyframewidth\relax
+                    \hskip\xshowidx@crosslength\relax
+            \kern\z@
+            \smash{\vrule\@width\xshowidx@bodyframewidth\@height\dimexpr\xshowidx@bodyframewidth+\xshowidx@crosslength
+            \@nameuse{side@frame@\xshowidx@frametype}%
+            %%\@depth\textheight
+            \relax}%
+            \@nameuse{topbot@frame@\xshowidx@frametype}%
+            %%\hrulefill%%\hfill
+            \smash{\vrule\@width\xshowidx@bodyframewidth\@height\dimexpr\xshowidx@bodyframewidth+\xshowidx@crosslength
+            \@nameuse{side@frame@\xshowidx@frametype}%
+            %\@depth\textheight
+             \relax}%
+            \rlap{\leaders\hrule\@width\xshowidx@crosslength\@height\xshowidx@bodyframewidth\relax
+                          \hskip\xshowidx@crosslength\relax
+                  \kern\z@}%
+            \vss
+            \hskip-\xshowidx@crosslength\relax
+            \leaders\hrule\@width\xshowidx@crosslength\@height\xshowidx@bodyframewidth\relax
+                    \hskip\xshowidx@crosslength\relax
+            \kern\z@
+            \smash{\vrule\@width\xshowidx@bodyframewidth\@height\xshowidx@bodyframewidth\@depth\xshowidx@crosslength\relax}%
+            \@nameuse{topbot@frame@\xshowidx@frametype}%
+            %\hrulefill
+            %\hfill
+            \smash{\vrule\@width\xshowidx@bodyframewidth\@height\xshowidx@bodyframewidth\@depth\xshowidx@crosslength\relax}%
+            \rlap{\leaders\hrule\@width\xshowidx@crosslength\@height\xshowidx@bodyframewidth\relax
+                          \hskip\xshowidx@crosslength\relax
+                 \kern\z@}%
+         }%
+        \vss}
+   }%
+}
+
+
+\def\showidx@margin{%
+   %\leavevmode
+   \rlap{\parindent\z@%
+         \if@xshowidx
+         \vbox to\z@{\hsize\dimexpr\textwidth+\xshowidx@sep\relax
+         \if@showframe\cornerbodyframe\fi
+                     \hfill\rlap{\vbox to\z@{\hsize\xshowidx@width\relax
+                                       \xshowidx@font%%\parindent0pt
+                                       \@nameuse{showidx@\thepage}%
+                                       \vss
+                                       }%
+                                }%
+         \vss}%
+         \fi 
+       }%
+}
+
+
+\def\xshowidx@texttop{%
+\bgroup
+   %%\cornerbodyframe
+   \showidx@margin
+\egroup
+}%
+
+\AtBeginDocument{%
+   \begingroup
+      \if\@texttop\relax
+         \global\let\@texttop\xshowidx@texttop
+      \else
+         \expanafter\toks@\expandafter{\@texttop\xshowidx@texttop}%
+         \xdef\@texttop{\the\toks@}%
+      \fi
+   \endgroup
+}
+
+
+\@input@{\jobname.idx}
+
+\endinput
