@@ -19,11 +19,15 @@ Declare \string\makeindex\space after includeing xshowidx.^^J%
 
 
 \DeclareOptionX{sep}[10mm]{\def\xshowidx@sep{#1}}
-\DeclareOptionX{width}[10em]{\def\xshowidx@width{#1}}
+\DeclareOptionX{width}[10zw]{\def\xshowidx@width{#1}}
 \DeclareOptionX{framewidth}[.4pt]{\def\xshowidx@bodyframewidth{#1}}
 \DeclareOptionX{crosslength}[10mm]{\def\xshowidx@crosslength{#1}}
 \DeclareOptionX{font}[\footnotesize]{\def\xshowidx@font{#1}}
 \DeclareOptionX{frametype}[corner]{\def\xshowidx@frametype{#1}}
+
+
+\newif\if@xshowidx@guide
+\DeclareOptionX{guide}[true]{\csname @xshowidx@guide#1\endcsname}
 
 
 \newif\if@xshowidx
@@ -34,7 +38,7 @@ Declare \string\makeindex\space after includeing xshowidx.^^J%
 \DeclareOptionX{noframe}[false]{\csname @showframe#1\endcsname}
 
 
-\ExecuteOptionsX{sep,width,framewidth,crosslength,showidx,font,frametype,showframe}
+\ExecuteOptionsX{sep,width,framewidth,crosslength,showidx,font,frametype,showframe,guide=flase}
 \ProcessOptionsX
 
 
@@ -52,10 +56,14 @@ Declare \string\makeindex\space after includeing xshowidx.^^J%
 \def\topbot@frame@all{\hrulefill}
 
 
-%\def\xshowidx@bodyframewidth{.4pt}
 
 \newtoks\tok@showidxA
 \newtoks\tok@showidxB
+
+\let\xshowidx@cnt@nodeA\@gobble
+\let\xshowidx@cnt@nodeB\@gobble
+
+\newcount\xshowidx@cntA
 
 
 \def\indexentry#1#2{%
@@ -63,7 +71,14 @@ Declare \string\makeindex\space after includeing xshowidx.^^J%
    \expandafter\expandafter\expandafter\tok@showidxA
       \expandafter\expandafter\expandafter{%
           \csname showidx@#2\endcsname}
-   \tok@showidxB{#1}%
+\global\advance\xshowidx@cntA\@ne
+\expandafter\xdef\csname xshowidx@name@nodeB@\the\xshowidx@cntA\endcsname{\detokenize{#1}}%
+%%\typeout{>>>>>>>>>>>>>\csname xshowidx@name@nodeB@\the\xshowidx@cntA\endcsname}%
+%   \expandafter\def\expandafter\tempargB\expandafter{\detokenize{#1}}%
+%   \tok@showidxB{\expandafter\xshowidx@cnt@nodeB\expandafter{\tempargB}#1}%
+   \tok@showidxB{\global\advance\xshowidx@cntA\@ne
+                 \xshowidx@cnt@nodeB{\@nameuse{xshowidx@name@nodeB@\the\xshowidx@cntA}}%
+                 #1}%
    \expandafter\xdef\csname showidx@#2\endcsname{\the\tok@showidxA\par\the\tok@showidxB}
 }
 
@@ -149,5 +164,47 @@ Declare \string\makeindex\space after includeing xshowidx.^^J%
 
 
 \@input@{\jobname.idx}
+\global\xshowidx@cntA\z@
+
+
+\if@xshowidx@guide
+
+\makeindex%%%!!
+
+\RequirePackage{tikz}
+
+
+\DeclareRobustCommand\xshowidx@cnt@nodeA[1]{%
+     \char\euc"A1A1\kern-1zw     
+     %%\global\advance\cnt@xshowidx@A\@ne
+     \tikz[remember picture, overlay]{\node[inner sep=\z@,outer sep=\z@](A#1) at (0,0) {};}%
+     \kern-1zw\char\euc"A1A1%%!!
+}
+
+
+
+\DeclareRobustCommand\xshowidx@cnt@nodeB[1]{%
+%%   \global\advance\cnt@xshowidx@B\@ne
+     \tikz[remember picture, overlay]{\node[inner sep=\z@,outer sep=\z@](B#1) at (0,0) {};
+                                      \draw (A#1)--(B#1);
+     }%
+}
+
+
+ \def\index{\@bsphack\begingroup
+             \@sanitize
+             \@wrindex}
+
+
+\def\@wrindex#1{%
+   \protected@write\@indexfile{}%
+      {\string\indexentry{#1}{\thepage}}%
+   \endgroup
+   \xshowidx@cnt@nodeA{#1}%
+   \@esphack
+}
+
+
+\fi
 
 \endinput
