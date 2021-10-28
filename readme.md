@@ -1,4 +1,4 @@
-# xshowidx ver.0.1 2021/10/26
+# xshowidx ver.0.2 2021/10/28
 
 はるか以前，LaTeX2.09のころに，`showidx.sty`という「スタイルファイル」がありました．手元にあるものには1988年2月2日という日付が記載されています．このスタイルファイルでは，ページに存在する`\index`の引数をそのページの欄外に出力する仕組みが定義されているのですが，ボックスや脚注にある`\index`を欄外に出すことはできませんでした．じつは，この`showidx`，2021年現在になってもまだ要求されることがあります．
 
@@ -10,7 +10,7 @@
 \usepcakage[<keyval list>]{xshowidx}
 
 <keyval list> := <key>=<val>(, <key>=<val>)*
-<key> := sep | width | framewidth | crosslength | font | frametype | showidx | showframe | noframe
+<key> := sep | width | framewidth | crosslength | font | frametype | showidx | showframe | noframe | guide
 ````
 
 - `sep`：値は長さで，デフォルトは10mm．版面から索引項目の出力までに距離を示します．
@@ -22,10 +22,15 @@
 - `showidx`：索引項目を出力するかしないかを指定します．デフォルトは`true`．`true`で出力，`false`で出力しないことを示します．
 - `showframe`：枠を出すか出さないかを指定します，デフォルトは`true`．`true`で枠を出力，`false`で枠を出力しないことを示します．
 - `noframe`：枠を出すか出さないかを指定します，`true`，`false`の値をとることができますが，単に`noframe`だけ指定することを想定しています．`noframe`は`showframe=false`のエイリアスです．
+- `guide`：本文中の索引項目と欄外の出力の間に直線を結びます．デフォルトでは引きません．これは組版結果に影響を及ぼすのであくまでも確認用です．
 
 パッケージのデフォルトは，`sep,width,framewidth,crosslength,showidx,font,frametype,showframe`となっているので，必要に応じて読み込み時に指定しなおしてください．
 
 ## 仕様
+
+### `guide`オプションの注意
+
+`guide`オプションはあくまでも確認用です．組版結果に影響を及ぼします．内部でtikzを呼び出しnodeを動的に定義してガイドの線分を引きますのでページ分割が変わるとnodeの位置が変わってエラーが出ることがありますが，無視してコンパイルを繰り返してください．また，現状では線分はページ構築の最初に行われるため，ページの構成要素はガイドの線分の上に引かれます．
 
 ### idxファイルの利用
 
